@@ -1,11 +1,11 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const graphQlHTTP = require('express-graphql')
-const {buildSchema} = require('graphql')
+const { buildSchema } = require('graphql')
 
 const app = express()
 
-const GRAPHQL_PORT =3000
+const GRAPHQL_PORT = 3000
 
 const leagues = []
 
