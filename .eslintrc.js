@@ -8,7 +8,10 @@ module.exports = {
         "sourceType": "module",
         "ecmaFeatures": {
             "jsx": true
-        }
+        },
     },
-    "extends": ["eslint:recommended", "standard"]
+    "extends": ["eslint:recommended", "standard"],
+    "rules": {
+        "comma-dangle": ["error", "only-multiline"]
+    }
 };

@@ -1,13 +1,13 @@
+/* eslint-disable no-console */
 const express = require('express')
 const bodyParser = require('body-parser')
 const graphQlHTTP = require('express-graphql')
 const { buildSchema } = require('graphql')
+const mongoose = require('mongoose')
+
+const League = require('./models/league')
 
 const app = express()
-
-const GRAPHQL_PORT = 3000
-
-const leagues = []
 
 app.use(bodyParser.json())
 
@@ -43,21 +43,53 @@ app.use('/graphql',
     `),
     rootValue: {
       leagues: () => {
-        return leagues
+        return League.find()
+          .then(leagues => {
+            return leagues.map(league => {
+              return {
+                ...league._doc,
+                _id: league.id,
+              }
+            }
+            )
+          }).catch(
+            err => {
+              console.log(err)
+              throw err
+            }
+          )
       },
       createLeague: (args) => {
-        const league = {
-          _id: Math.random().toString(),
+        const league = new League({
           name: args.leagueInput.name,
           tier: +args.leagueInput.tier,
-          createdDateTime: args.leagueInput.createdDateTime
-        }
-        leagues.push(league)
+          createdDateTime: new Date(args.leagueInput.createdDateTime),
+        })
         return league
-      }
+          .save()
+          .then(result => {
+            console.log(result)
+            return {
+              ...result._doc,
+              _id: result.id,
+            }
+          })
+          .catch(err => {
+            console.log(err)
+            throw err
+          })
+      },
     },
-    graphiql: true
+    graphiql: true,
   })
 )
 
-app.listen(GRAPHQL_PORT)
+mongoose.connect(
+  `
+  mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0-dxekj.mongodb.net/${process.env.MONGO_DB}?retryWrites=true`
+  , { useNewUrlParser: true }
+).then(() => {
+  app.listen(process.env.GRAPHQL_PORT)
+}).catch(err => {
+  console.log(err)
+})
