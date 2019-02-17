@@ -1,0 +1,16 @@
+{
+  "name": "full-time",
+  "version": "0.1.0",
+  "description": "Attempt to build the full-time app from thefa.com",
+  "main": "index.js",
+  "repository": "https://github.com/mrcreel/full-time.git",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "nodeJS",
+    "graphQl"
+  ],
+  "author": "Michael R Creel",
+  "license": "MIT"
+}
