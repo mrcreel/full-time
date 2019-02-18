@@ -11,9 +11,9 @@ const leagueSchema = new Schema({
     type: Number,
     required: true
   },
-  createdDateTime: {
-    type: Date,
-    required: true
+  creator: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
   }
 })
 
