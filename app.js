@@ -25,7 +25,8 @@ app.use('/graphql',
       type User{
         _id: ID!
         email: String!
-        password: String
+        password: String // Don't make this non-nullable!!!
+        createdDateTime: String!
       }
 
       input LeagueInput{
@@ -36,10 +37,12 @@ app.use('/graphql',
       input UserInput{
         email: String!
         password: String!
+        createdDateTime: String!
       }
 
       type Query{
         leagues: [League!]!
+        users: [User!]!
       }
       type Mutation{
         createLeague(leagueInput: LeagueInput): League
@@ -94,7 +97,9 @@ app.use('/graphql',
         return user
           .save()
           .then(result => {})
-          .catch(err => { throw err })
+          .catch(err => {
+            throw err
+          })
       }
     },
     graphiql: true,

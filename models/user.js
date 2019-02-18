@@ -11,10 +11,14 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+  createdDateTime: {
+    type: Date,
+    required: true
+  },
   createdLeagues: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Event'
+      ref: 'League'
     }
   ]
 })
