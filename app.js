@@ -20,24 +20,25 @@ app.use('/graphql',
         _id: ID!
         name: String!
         tier: Int!
+        creator: String!
         createdDateTime: String!
       }
       type User{
         _id: ID!
-        email: String!
-        password: String // Don't make this non-nullable!!!
+        userName: String!
+        password: String
+        authLevel: Int!
         createdDateTime: String!
       }
 
       input LeagueInput{
         name:String!
         tier: Int!
-        createdDateTime: String!
       }
       input UserInput{
-        email: String!
+        userName: String!
         password: String!
-        createdDateTime: String!
+        authLevel: Int!
       }
 
       type Query{
@@ -76,28 +77,77 @@ app.use('/graphql',
         const league = new League({
           name: args.leagueInput.name,
           tier: +args.leagueInput.tier,
-          createdDateTime: new Date(args.leagueInput.createdDateTime),
+          creator: `5c6cc1f260bb0736b8d4144e`,
+          createdDateTime: new Date().toISOString()
         })
+        let createdLeague
         return league
           .save()
           .then(result => {
+            createdLeague = { ...result._doc, _id: result.id }
             console.log(result)
-            return {
-              ...result._doc,
-              _id: result.id,
+            return User.findById(`5c6ccbac0220e34e39193f98`)
+          })
+          .then(user => {
+            if (!user) {
+              throw new Error(`Username doesn't exist`)
             }
+            user.createdLeagues.push(league)
+            user.save()
+          })
+          .then(result => {
+            return createdLeague
           })
           .catch(err => {
             console.log(err)
             throw err
           })
       },
+      users: () => {
+        return User.find()
+          .then(users => {
+            return users.map(user => {
+              return {
+                ...user._doc,
+                _id: user.id,
+                password: null,
+              }
+            }
+            )
+          }).catch(
+            err => {
+              console.log(err)
+              throw err
+            }
+          )
+      },
       createUser: (args) => {
-        const user = new User({})
-        return user
-          .save()
-          .then(result => {})
+        return User.findOne({ userName: args.userInput.userName })
+          .then(user => {
+            if (user) {
+              throw new Error(`Username already exists`)
+            }
+            return bcrypt.hash(args.userInput.password, 12)
+          })
+          .then(hashedPassword => {
+            const user = new User({
+              userName: args.userInput.userName,
+              password: hashedPassword,
+              authLevel: +args.userInput.authLevel,
+              createdDateTime: new Date().toIsoString()
+            })
+            console.log(user)
+            return user.save()
+          })
+          .then(result => {
+            return {
+              ...result._doc,
+              _id: result.id,
+              password: null,
+            }
+          })
           .catch(err => {
+            console.log(err)
             throw err
           })
       }
@@ -113,6 +163,8 @@ mongoose.connect(
   , { useNewUrlParser: true }
 ).then(() => {
   app.listen(process.env.GRAPHQL_PORT)
+  console.log(`Listening on Port ${process.env.GRAPHQL_PORT}`)
 }).catch(err => {
   console.log(err)
+  throw err
 })
